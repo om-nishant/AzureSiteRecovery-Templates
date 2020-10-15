@@ -22,7 +22,9 @@ Foreach($fabric in $azureFabrics) {
 }
 
 # Setup the fabrics. Create if the fabrics do not already exist.
-$priFab = $azureFabrics | where {$_.FabricSpecificDetails.Location -like $PrimaryRegion -or $_.FabricSpecificDetails.Location -like $PrimaryRegion.Replace(' ', '')}
+$PrimaryRegion = $PrimaryRegion.Replace(' ', '')
+$RecoveryRegion = $RecoveryRegion.Replace(' ', '')
+$priFab = $azureFabrics | where {$_.FabricSpecificDetails.Location -like $PrimaryRegion}
 if ($priFab -eq $null) {
     Write-Output 'Primary Fabric does not exist. Creating Primary Fabric.'
     $job = New-ASRFabric -Azure -Name $primaryRegion -Location $primaryRegion
@@ -35,7 +37,7 @@ if ($priFab -eq $null) {
     Write-Output 'Created Primary Fabric.'
 }
 
-$recFab = $azureFabrics | where {$_.FabricSpecificDetails.Location -eq $RecoveryRegion -or $_.FabricSpecificDetails.Location -like $RecoveryRegion.Replace(' ', '')}
+$recFab = $azureFabrics | where {$_.FabricSpecificDetails.Location -eq $RecoveryRegion}
 if ($recFab -eq $null) {
     Write-Output 'Recovery Fabric does not exist. Creating Recovery Fabric.'
     $job = New-ASRFabric -Azure -Name $recoveryRegion -Location $recoveryRegion

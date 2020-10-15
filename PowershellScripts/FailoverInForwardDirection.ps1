@@ -5,9 +5,6 @@
     [string] $PrimaryRegion,
     [string] $EnableProtectionName)
 
-Write-Output 'Start:   '
-Write-Output $PrimaryFabricName
-$EnableProtectionName = 'omn-templateVM-01'
 $message = 'Performing Failover for virtual machine {0} in vault {1} using target resource group {2} and target virtual network {3}.' -f $SourceVmArmId, $VaultName, $TargetResourceGroupId, $TargetVirtualNetworkId
 Write-Output $message 
 
