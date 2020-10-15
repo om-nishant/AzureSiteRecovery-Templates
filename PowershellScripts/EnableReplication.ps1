@@ -2,7 +2,7 @@
     [string] $VaultSubscriptionId,
     [string] $VaultResourceGroupName,
     [string] $VaultName,
-    [string] $PrimaryFabricName,
+    [string] $PrimaryRegion,
     [string] $ProtectionContainerMappingName,
     [string] $TargetResourceGroupId,
     [string] $TargetVirtualNetworkId,
@@ -28,7 +28,7 @@ $vault = Get-AzRecoveryServicesVault -ResourceGroupName $VaultResourceGroupName 
 Set-AzRecoveryServicesAsrVaultContext -vault $vault
 
 # Look up the protection container mapping to be used for the enable replication.
-$priFabric = get-asrfabric -Name $PrimaryFabricName
+$priFabric = get-asrfabric | where {$_.FabricSpecificDetails.Location -like $PrimaryRegion -or $_.FabricSpecificDetails.Location -like $PrimaryRegion.Replace(' ', '')}
 $priContainer = Get-ASRProtectionContainer -Fabric $priFabric
 $protectionContainerMapping = Get-ASRProtectionContainerMapping -Name $ProtectionContainerMappingName -ProtectionContainer $priContainer
 

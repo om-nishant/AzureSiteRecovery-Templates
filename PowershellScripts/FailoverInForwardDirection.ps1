@@ -2,12 +2,13 @@
     [string] $VaultSubscriptionId,
     [string] $VaultResourceGroupName,
     [string] $VaultName,
-    [string] $PrimaryFabricName,
+    [string] $PrimaryRegion,
     [string] $EnableProtectionName)
 
-Write-Output ''
+Write-Output 'Start:   '
+Write-Output $PrimaryFabricName
 $EnableProtectionName = 'omn-templateVM-01'
-$message = 'Enabling protection for virtual machine {0} in vault {1} using target resource group {2} and target virtual network {3}.' -f $SourceVmArmId, $VaultName, $TargetResourceGroupId, $TargetVirtualNetworkId
+$message = 'Performing Failover for virtual machine {0} in vault {1} using target resource group {2} and target virtual network {3}.' -f $SourceVmArmId, $VaultName, $TargetResourceGroupId, $TargetVirtualNetworkId
 Write-Output $message 
 
 # Initialize the designated output of deployment script that can be accessed by various scripts in the template.
@@ -21,7 +22,7 @@ $vault = Get-AzRecoveryServicesVault -ResourceGroupName $VaultResourceGroupName 
 Set-AzRecoveryServicesAsrVaultContext -vault $vault
 
 # Look up the protection container mapping to be used for the enable replication.
-$priFabric = get-asrfabric -Name $PrimaryFabricName
+$priFabric = get-asrfabric | where {$_.FabricSpecificDetails.Location -like $PrimaryRegion -or $_.FabricSpecificDetails.Location -like $PrimaryRegion.Replace(' ', '')}
 $priContainer = Get-ASRProtectionContainer -Fabric $priFabric
 $rpi = Get-ASRReplicationProtectedItem -Name $EnableProtectionName -ProtectionContainer $priContainer
 
@@ -35,8 +36,18 @@ do {
     Write-Output $job.State
 } while ($job.State -ne 'Succeeded' -and $job.State -ne 'Failed' -and $job.State -ne 'CompletedWithInformation')
 
-$message = 'Completed Failover for {0}.' -f $rpi.Id
+$message = 'Completed Failover for {0}. Committing Failover.' -f $rpi.Id
+$job = Start-ASRCommitFailover -ReplicationProtectedItem $rpi
+
+do {
+    Start-Sleep -Seconds 50
+    $job = Get-AsrJob -Job $job
+    Write-Output $job.State
+} while ($job.State -ne 'Succeeded' -and $job.State -ne 'Failed' -and $job.State -ne 'CompletedWithInformation')
+
+$message = 'Committed Failover for {0}.' -f $rpi.Id
 Write-Output ''
+
 
 $DeploymentScriptOutputs['ProtectedItemId'] = $rpi.ID
 $DeploymentScriptOutputs

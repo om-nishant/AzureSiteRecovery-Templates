@@ -29,7 +29,7 @@ if ($priFab -eq $null) {
     do {
         Start-Sleep -Seconds 50
         $job = Get-AsrJob -Job $job
-    } while ($job.State -ne 'Succeeded' -and $job.State -ne 'Failed')
+    } while ($job.State -ne 'Succeeded' -and $job.State -ne 'Failed' -and $job.State -ne 'CompletedWithInformation')
 
     $priFab = get-asrfabric -Name $primaryRegion
     Write-Output 'Created Primary Fabric.'
@@ -42,7 +42,7 @@ if ($recFab -eq $null) {
     do {
         Start-Sleep -Seconds 50
         $job = Get-AsrJob -Job $job
-    } while ($job.State -ne 'Succeeded' -and $job.State -ne 'Failed')
+    } while ($job.State -ne 'Succeeded' -and $job.State -ne 'Failed' -and $job.State -ne 'CompletedWithInformation')
 
     $recFab = get-asrfabric -Name $RecoveryRegion
     Write-Output 'Created Recovery Fabric.'
@@ -64,7 +64,7 @@ if ($priContainer -eq $null) {
     do {
         Start-Sleep -Seconds 50
         $job = Get-AsrJob -Job $job
-    } while ($job.State -ne 'Succeeded' -and $job.State -ne 'Failed')
+    } while ($job.State -ne 'Succeeded' -and $job.State -ne 'Failed' -and $job.State -ne 'CompletedWithInformation')
 
     $priContainer = Get-ASRProtectionContainer -Name $priFab.Name -Fabric $priFab
     Write-Output 'Created Primary Protection Container.'
@@ -77,7 +77,7 @@ if ($recContainer -eq $null) {
     do {
         Start-Sleep -Seconds 50
         $job = Get-AsrJob -Job $job
-    } while ($job.State -ne 'Succeeded' -and $job.State -ne 'Failed')
+    } while ($job.State -ne 'Succeeded' -and $job.State -ne 'Failed' -and $job.State -ne 'CompletedWithInformation')
 
     $recContainer = Get-ASRProtectionContainer -Name $recFab.Name -Fabric $recFab
     Write-Output 'Created Recovery Protection Container.'
@@ -102,7 +102,7 @@ if ($protectionContainerMappings -eq $null) {
         do {
             Start-Sleep -Seconds 50
             $job = Get-AsrJob -Job $job
-        } while ($job.State -ne 'Succeeded' -and $job.State -ne 'Failed')
+        } while ($job.State -ne 'Succeeded' -and $job.State -ne 'Failed' -and $job.State -ne 'CompletedWithInformation')
 
         $policy = Get-ASRPolicy -Name $policyName
         Write-Output 'Created Replication policy.' 
@@ -113,7 +113,7 @@ if ($protectionContainerMappings -eq $null) {
     do {
         Start-Sleep -Seconds 50
         $job = Get-AsrJob -Job $job
-    } while ($job.State -ne 'Succeeded' -and $job.State -ne 'Failed')
+    } while ($job.State -ne 'Succeeded' -and $job.State -ne 'Failed' -and $job.State -ne 'CompletedWithInformation')
 
     $protectionContainerMappings = Get-ASRProtectionContainerMapping -Name $protectionContainerMappingName -ProtectionContainer $priContainer
     Write-Output 'Created Protection Container mapping.'   
