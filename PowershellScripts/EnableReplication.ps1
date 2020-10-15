@@ -77,7 +77,9 @@ $message = 'Enable protection being triggered'
 Write-Output $message
 
 $job = New-ASRReplicationProtectedItem -Name $EnableProtectionName -ProtectionContainerMapping $protectionContainerMapping `
-    -AzureVmId $SourceVmArmId -AzureToAzureDiskReplicationConfiguration $diskList -RecoveryResourceGroupId $TargetResourceGroupId
+    -AzureVmId $SourceVmArmId -AzureToAzureDiskReplicationConfiguration $diskList -RecoveryResourceGroupId $TargetResourceGroupId `
+    -RecoveryAzureNetworkId $TargetVirtualNetworkId
+
 do {
     Start-Sleep -Seconds 50
     $job = Get-AsrJob -Job $job
