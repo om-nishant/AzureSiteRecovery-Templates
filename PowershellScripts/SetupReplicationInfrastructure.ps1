@@ -94,8 +94,8 @@ Write-Output $message
 $DeploymentScriptOutputs['PrimaryProtectionContainer'] = $priContainer.Name
 $DeploymentScriptOutputs['RecoveryProtectionContainer'] = $recContainer.Name
 
-$protectionContainerMappings = Get-ASRProtectionContainerMapping -ProtectionContainer $priContainer | where {$_.TargetProtectionContainerId -like $recContainer.Id}
-if ($protectionContainerMappings -eq $null) {
+$primaryProtectionContainerMapping = Get-ASRProtectionContainerMapping -ProtectionContainer $priContainer | where {$_.TargetProtectionContainerId -like $recContainer.Id}
+if ($primaryProtectionContainerMapping -eq $null) {
     Write-Output 'Protection Container mapping does not already exist. Creating protection container.' 
     $policy = Get-ASRPolicy -Name $policyName
     if ($policy -eq $null) {
@@ -110,21 +110,49 @@ if ($protectionContainerMappings -eq $null) {
         Write-Output 'Created Replication policy.' 
     }
 
-    $protectionContainerMappingName = $priContainer.Name +  "To" + $recContainer.Name
+    $protectionContainerMappingName = $priContainer.Name +  'To' + $recContainer.Name
     $job = New-ASRProtectionContainerMapping -Name $protectionContainerMappingName -Policy $policy -PrimaryProtectionContainer $priContainer -RecoveryProtectionContainer $recContainer
     do {
         Start-Sleep -Seconds 50
         $job = Get-AsrJob -Job $job
     } while ($job.State -ne 'Succeeded' -and $job.State -ne 'Failed' -and $job.State -ne 'CompletedWithInformation')
-
-    $protectionContainerMappings = Get-ASRProtectionContainerMapping -Name $protectionContainerMappingName -ProtectionContainer $priContainer
-    Write-Output 'Created Protection Container mapping.'   
+	
+	$primaryProtectionContainerMapping = Get-ASRProtectionContainerMapping -Name $protectionContainerMappingName -ProtectionContainer $priContainer
+    Write-Output 'Created Primary Protection Container mappings.'   
 }
 
-$message = 'Protection Container mapping {0}' -f $protectionContainerMappings.Id
+$reverseContainerMapping = Get-ASRProtectionContainerMapping -ProtectionContainer $recContainer | where {$_.TargetProtectionContainerId -like $priContainer.Id}
+if ($reverseContainerMapping -eq $null) {
+    Write-Output 'Reverse Protection container does not already exist. Creating Reverse protection container.' 
+    if ($policy -eq $null) {
+        Write-Output 'Replication policy does not already exist. Creating Replication policy.' 
+        $job = New-ASRPolicy -AzureToAzure -Name $policyName -RecoveryPointRetentionInHours 1 -ApplicationConsistentSnapshotFrequencyInHours 1
+        do {
+            Start-Sleep -Seconds 50
+            $job = Get-AsrJob -Job $job
+        } while ($job.State -ne 'Succeeded' -and $job.State -ne 'Failed' -and $job.State -ne 'CompletedWithInformation')
+
+        $policy = Get-ASRPolicy -Name $policyName
+        Write-Output 'Created Replication policy.' 
+    }
+
+    $protectionContainerMappingName = $recContainer.Name + 'To' + $priContainer.Name
+    $job = New-ASRProtectionContainerMapping -Name $protectionContainerMappingName -Policy $policy -PrimaryProtectionContainer $recContainer `
+        -RecoveryProtectionContainer $priContainer
+    do {
+        Start-Sleep -Seconds 50
+        $job = Get-AsrJob -Job $job
+    } while ($job.State -ne 'Succeeded' -and $job.State -ne 'Failed' -and $job.State -ne 'CompletedWithInformation')
+	
+	$reverseContainerMapping = Get-ASRProtectionContainerMapping -Name $protectionContainerMappingName -ProtectionContainer $recContainer    
+    Write-Output 'Created Recovery Protection Container mappings.'
+}
+
+$message = 'Protection Container mapping {0}' -f $primaryProtectionContainerMapping.Id
 Write-Output $message
 
-$DeploymentScriptOutputs['ProtectionContainerMapping'] = $protectionContainerMappings.Name
+$DeploymentScriptOutputs['PrimaryProtectionContainerMapping'] = $primaryProtectionContainerMapping.Name
+$DeploymentScriptOutputs['RecoveryProtectionContainerMapping'] = $reverseContainerMapping.Name
 
 # Log consolidated output.
 Write-Output 'Infrastrucure Details'
