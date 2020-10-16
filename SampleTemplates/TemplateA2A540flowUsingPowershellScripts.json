@@ -70,6 +70,12 @@
                 "description": "ARM ID of the storage account to be used to cache replication data in the source region."
             }
         },
+        "recoveryStagingStorageAccount": {
+            "type": "String",
+            "metadata": {
+                "description": "ARM ID of the storage account to be used to cache replication data in the DR region."
+            }
+        },
         "recoveryReplicaDiskAccountType": {
             "defaultValue": "Standard_LRS",
             "type": "String",
@@ -127,7 +133,7 @@
                 "forceUpdateTag": "[parameters('updateTag')]",
                 "azPowerShellVersion": "3.0",
                 "timeout": "PT1H",
-                "arguments": "[concat('-VaultSubscriptionId', ' ', parameters('VaultSubscriptionId'), ' ', '-VaultResourceGroupName', ' ', parameters('vaultResourceGroupName'), ' ', '-VaultName', ' ', parameters('vaultName'), ' ', '-PrimaryRegion', ' ', replace(string(parameters('originalSourceRegion')), ' ', ''), ' ', '-ProtectionContainerMappingName', ' ', string(reference('SetupInitialInfrastructure').outputs.ProtectionContainerMapping), ' ', '-TargetResourceGroupId', ' ', parameters('targetResourceGroupId'), ' ', '-TargetVirtualNetworkId', ' ', parameters('targetVirtualNetworkId'), ' ', '-SourceVmArmId', ' ', parameters('sourceVmArmId'), ' ', '-EnableProtectionName', ' ', parameters('enableProtectionName'), ' ', '-PrimaryStagingStorageAccount', ' ', parameters('primaryStagingStorageAccount'), ' ', '-RecoveryReplicaDiskAccountType', ' ', parameters('recoveryReplicaDiskAccountType'), ' ', '-RecoveryTargetDiskAccountType', ' ', parameters('recoveryTargetDiskAccountType'))]",
+                "arguments": "[concat('-VaultSubscriptionId', ' ', parameters('VaultSubscriptionId'), ' ', '-VaultResourceGroupName', ' ', parameters('vaultResourceGroupName'), ' ', '-VaultName', ' ', parameters('vaultName'), ' ', '-PrimaryRegion', ' ', replace(string(parameters('originalSourceRegion')), ' ', ''), ' ', '-ProtectionContainerMappingName', ' ', string(reference('SetupInitialInfrastructure').outputs.PrimaryProtectionContainerMapping), ' ', '-TargetResourceGroupId', ' ', parameters('targetResourceGroupId'), ' ', '-TargetVirtualNetworkId', ' ', parameters('targetVirtualNetworkId'), ' ', '-SourceVmArmId', ' ', parameters('sourceVmArmId'), ' ', '-EnableProtectionName', ' ', parameters('enableProtectionName'), ' ', '-PrimaryStagingStorageAccount', ' ', parameters('primaryStagingStorageAccount'), ' ', '-RecoveryReplicaDiskAccountType', ' ', parameters('recoveryReplicaDiskAccountType'), ' ', '-RecoveryTargetDiskAccountType', ' ', parameters('recoveryTargetDiskAccountType'))]",
                 "primaryScriptURI": "https://raw.githubusercontent.com/om-nishant/AzureSiteRecovery-Templates/main/PowershellScripts/EnableReplication.ps1",
                 "cleanupPreference": "Always",
                 "retentionInterval": "P1D"
@@ -154,6 +160,31 @@
                 "timeout": "PT1H",
                 "arguments": "[concat('-VaultSubscriptionId', ' ', parameters('VaultSubscriptionId'), ' ', '-VaultResourceGroupName', ' ', parameters('vaultResourceGroupName'), ' ', '-VaultName', ' ', parameters('vaultName'), ' ', '-PrimaryRegion', ' ', replace(string(parameters('originalSourceRegion')), ' ', ''), ' ',  '-EnableProtectionName', ' ', parameters('enableProtectionName'))]",
                 "primaryScriptURI": "https://raw.githubusercontent.com/om-nishant/AzureSiteRecovery-Templates/main/PowershellScripts/FailoverInForwardDirection.ps1",
+                "cleanupPreference": "Always",
+                "retentionInterval": "P1D"
+            }
+        },
+        {
+            "type": "Microsoft.Resources/deploymentScripts",
+            "apiVersion": "2019-10-01-preview",
+            "name": "ReprotectRecoveryToPrimary",
+            "location": "[resourceGroup().location]",
+            "dependsOn": [
+                "FailoverPrimaryToRecovery"
+            ],
+            "kind": "AzurePowerShell",
+            "identity": {
+                "type": "userAssigned",
+                "userAssignedIdentities": {
+                    "[parameters('identity')]": {}
+                }
+            },
+            "properties": {
+                "forceUpdateTag": "[parameters('updateTag')]",
+                "azPowerShellVersion": "3.0",
+                "timeout": "PT1H",
+                "arguments": "[concat('-VaultSubscriptionId', ' ', parameters('VaultSubscriptionId'), ' ', '-VaultResourceGroupName', ' ', parameters('vaultResourceGroupName'), ' ', '-VaultName', ' ', parameters('vaultName'), ' ', '-PrimaryRegion', ' ', replace(string(parameters('originalSourceRegion')), ' ', ''), ' ',  '-DrRegion', ' ', parameters('drRegion'), ' ',  '-ProtectedItemName', ' ', parameters('enableProtectionName'), ' ',  '-DrResourceGroupId', ' ', parameters('targetResourceGroupId'), ' ',  '-SourceVmArmId', ' ', parameters('sourceVmArmId'), ' ',  '-RecoveryStagingStorageAccount', ' ', parameters('recoveryStagingStorageAccount'), ' ', '-RecoveryReplicaDiskAccountType', ' ', parameters('recoveryReplicaDiskAccountType'), ' ', '-RecoveryTargetDiskAccountType', ' ', parameters('recoveryTargetDiskAccountType'))]",
+                "primaryScriptURI": "https://raw.githubusercontent.com/om-nishant/AzureSiteRecovery-Templates/main/PowershellScripts/ReverseReplicationRecoveryToPrimary.ps1",
                 "cleanupPreference": "Always",
                 "retentionInterval": "P1D"
             }
