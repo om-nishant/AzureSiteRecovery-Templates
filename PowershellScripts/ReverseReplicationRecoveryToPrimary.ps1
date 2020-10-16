@@ -44,7 +44,7 @@ Write-Output $message
 # Trigger Switch protection
 # Retrieve DR VM.
 $drResourceGroupName = $DrResourceGroupId.Split('/')[4]
-$drVM = Get-AzVM -ResourceGroupName $drResourceGroupName -Name $EnableProtectionName
+$drVM = Get-AzVM -ResourceGroupName $drResourceGroupName -Name $ProtectedItemName
 $message = 'Reverse replication to be triggered for {0}' -f $drVM.ID
 $sourceVmResourceGroupId = $SourceVmArmId.Substring(0, $SourceVmArmId.ToLower().IndexOf('/providers'))
 Write-Output $message
