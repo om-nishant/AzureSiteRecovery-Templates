@@ -47,4 +47,5 @@ Write-Output ''
 
 
 $DeploymentScriptOutputs['ProtectedItemId'] = $rpi.ID
+$DeploymentScriptOutputs['ProtectedItemName'] = $rpi.Name
 $DeploymentScriptOutputs
