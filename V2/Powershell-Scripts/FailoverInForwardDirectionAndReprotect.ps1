@@ -3,14 +3,17 @@
     [string] $VaultResourceGroupName,
     [string] $VaultName,
     [string] $PrimaryRegion,
-	[string[]] $sourceVmARMIdsCSV
+	[string] $sourceVmARMIdsCSV,
 	[string] $RecoveryStagingStorageAccount,
     [string] $RecoveryReplicaDiskAccountType = 'Standard_LRS',
     [string] $RecoveryTargetDiskAccountType = 'Standard_LRS')
 
 $message = 'Performing Failover for virtual machine {0} in vault {1}.' -f $sourceVmARMIdsCSV, $VaultName
 Write-Output $message 
+
 $sourceVmARMIds = $sourceVmARMIdsCSV.Split(',')
+
+$sourceVmARMIds
 
 # Initialize the designated output of deployment script that can be accessed by various scripts in the template.
 $DeploymentScriptOutputs = @{}
@@ -28,7 +31,9 @@ $priContainer = Get-ASRProtectionContainer -Fabric $priFabric
 $recContainer = Get-ASRProtectionContainer -Fabric $recFab
 $reverseContainerMapping = Get-ASRProtectionContainerMapping -ProtectionContainer $recContainer | where {$_.TargetProtectionContainerId -like $priContainer.Id}
 
-$rpisInContainer = Get-ASRReplicationProtectedItem -ProtectionContainer $priContainer | where {$SourceVmArmIds -contains $_.ProviderSpecificDetails.FabricObjectId}
+$priContainerRPIS = Get-ASRReplicationProtectedItem -ProtectionContainer $priContainer
+$rpisInContainer = $priContainerRPIS | where {$SourceVmArmIds -contains $_.ProviderSpecificDetails.FabricObjectId}
+$rpisInContainer
 
 # Setup the vault context.
 $message = 'Replication protected Items in Container:'
@@ -148,7 +153,10 @@ foreach ($job in $reverseReplicationJobs) {
 
 $rpisInContainer = Get-ASRReplicationProtectedItem -ProtectionContainer $recContainer | where {$drVmArmIds -contains $_.ProviderSpecificDetails.FabricObjectId}
 $reprotectedArmIds = New-Object System.Collections.ArrayList
-$rpisInContainer | $reprotectedArmIds.Add($_.Id)
+foreach ($rpi in $rpisInContainer)
+{
+    $reprotectedArmIds.Add($rpi.Id)
+}
 
 $DeploymentScriptOutputs['ReProtectedItemArmIds'] = $reprotectedArmIds -Join ','
 $DeploymentScriptOutputs['DrVmArmIds'] = $drVmArmIds -Join ','
