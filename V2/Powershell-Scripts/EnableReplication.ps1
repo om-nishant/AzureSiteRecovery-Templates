@@ -6,6 +6,7 @@
     [string] $RecoveryRegion,
     [string] $policyName = 'A2APolicy',
 	[string] $sourceVmARMIdsCSV,
+	[string] $TargetResourceGroupId,
 	[string] $PrimaryStagingStorageAccount,
     [string] $RecoveryReplicaDiskAccountType = 'Standard_LRS',
     [string] $RecoveryTargetDiskAccountType = 'Standard_LRS'
