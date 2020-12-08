@@ -135,7 +135,33 @@
                 "cleanupPreference": "Always",
                 "retentionInterval": "P1D"
             }
+        },
+        {
+            "type": "Microsoft.Resources/deploymentScripts",
+            "apiVersion": "2019-10-01-preview",
+            "name": "FailbackAndReprotect",
+            "location": "[resourceGroup().location]",
+            "dependsOn": [
+                "FailoverAndReprotect"
+            ],
+            "kind": "AzurePowerShell",
+            "identity": {
+                "type": "userAssigned",
+                "userAssignedIdentities": {
+                    "[parameters('identity')]": {}
+                }
+            },
+            "properties": {
+                "forceUpdateTag": "[parameters('updateTag')]",
+                "azPowerShellVersion": "3.0",
+                "timeout": "PT1H",
+                "arguments": "[concat('-VaultSubscriptionId', ' ', parameters('VaultSubscriptionId'), ' ', '-VaultResourceGroupName', ' ', parameters('vaultResourceGroupName'), ' ', '-VaultName', ' ', parameters('vaultName'), ' ', '-PrimaryRegion', ' ', replace(string(parameters('originalSourceRegion')), ' ', ''), ' ', '-RecoveryRegion', ' ', replace(string(parameters('drRegion')), ' ', ''), ' ',  '-sourceVmARMIdsCSV', ' ', parameters('sourceVmARMIdsCSV'), ' ', '-DrVMArmIdsCSV', ' ', reference('FailoverAndReprotect').outputs.DrVmArmIds, ' ', '-PrimaryStagingStorageAccount', ' ', parameters('primaryStagingStorageAccount'), ' ', '-RecoveryReplicaDiskAccountType', ' ', parameters('recoveryReplicaDiskAccountType'), ' ', '-RecoveryTargetDiskAccountType', ' ', parameters('recoveryTargetDiskAccountType'))]",
+                "primaryScriptURI": "https://raw.githubusercontent.com/om-nishant/AzureSiteRecovery-Templates/main/V2/Powershell-Scripts/FailoverInForwardDirectionAndReprotect.ps1",
+                "cleanupPreference": "Always",
+                "retentionInterval": "P1D"
+            }
         }
+    
     ],
     "outputs": {
         "result": {
