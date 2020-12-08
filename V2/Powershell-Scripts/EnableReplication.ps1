@@ -7,10 +7,24 @@
     [string] $policyName = 'A2APolicy',
 	[string] $sourceVmARMIdsCSV,
 	[string] $TargetResourceGroupId,
+    [string] $TargetVirtualNetworkId,
 	[string] $PrimaryStagingStorageAccount,
     [string] $RecoveryReplicaDiskAccountType = 'Standard_LRS',
     [string] $RecoveryTargetDiskAccountType = 'Standard_LRS'
 )
+
+$VaultSubscriptionId = "605e5f88-99d5-4be1-965d-445852415039"
+$vaultResourceGroupName = "omn-2010-ccy"
+$vaultName = "omn-2010-ccy-01"
+$primaryRegion = "CentralUS"
+$recoveryRegion = "WestUs"
+$policyName = "AzureToAzureReplicationPolicy"
+$sourceVmARMIdsCSV = "/subscriptions/605e5f88-99d5-4be1-965d-445852415039/resourceGroups/omn-templateresources-CUS/providers/Microsoft.Compute/virtualMachines/omn-templateVM-11"
+$TargetResourceGroupId = "/subscriptions/605e5f88-99d5-4be1-965d-445852415039/resourceGroups/omn-wus-templateDeployedVMs"
+$PrimaryStagingStorageAccount = "/subscriptions/605e5f88-99d5-4be1-965d-445852415039/resourceGroups/omn-templateresources-CUS/providers/Microsoft.Storage/storageAccounts/omncusstorageaccount"
+$RecoveryReplicaDiskAccountType = "Standard_LRS"
+$RecoveryTargetDiskAccountType = "Standard_LRS"
+$TargetVirtualNetworkId = "/subscriptions/605e5f88-99d5-4be1-965d-445852415039/resourceGroups/omn-wus-templateDeployedVMs/providers/Microsoft.Network/virtualNetworks/omn-wus-templateDeployedVMs-vnet"
 
 # Initialize the designated output of deployment script that can be accessed by various scripts in the template.
 $DeploymentScriptOutputs = @{}
@@ -102,6 +116,7 @@ $message = 'Primary Protection Container {0}' -f $priContainer.Id
 Write-Output $message
 $message = 'Recovery Protection Container {0}' -f $recContainer.Id
 Write-Output $message
+Write-Output ' '
 
 $DeploymentScriptOutputs['PrimaryProtectionContainer'] = $priContainer.Name
 $DeploymentScriptOutputs['RecoveryProtectionContainer'] = $recContainer.Name
@@ -195,7 +210,7 @@ foreach ($sourceVmArmId in $sourceVmARMIds) {
 	$message = 'Enable protection being triggered.'
 	Write-Output $message
 	
-	$job = New-ASRReplicationProtectedItem -Name $vmName -ProtectionContainerMapping $protectionContainerMapping `
+	$job = New-ASRReplicationProtectedItem -Name $vmName -ProtectionContainerMapping $primaryProtectionContainerMapping `
 		-AzureVmId $SourceVmArmId -AzureToAzureDiskReplicationConfiguration $diskList -RecoveryResourceGroupId $TargetResourceGroupId `
 		-RecoveryAzureNetworkId $TargetVirtualNetworkId
 	$enableReplicationJobs.Add($job)
