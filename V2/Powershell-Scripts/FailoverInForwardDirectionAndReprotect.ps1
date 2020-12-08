@@ -3,7 +3,7 @@
     [string] $VaultResourceGroupName,
     [string] $VaultName,
     [string] $PrimaryRegion,
-    [string[]] $ProtectedItemArmIds,
+	[string[]] $SourceVmArmIds
 	[string] $RecoveryStagingStorageAccount,
     [string] $RecoveryReplicaDiskAccountType = 'Standard_LRS',
     [string] $RecoveryTargetDiskAccountType = 'Standard_LRS')
@@ -27,7 +27,13 @@ $priContainer = Get-ASRProtectionContainer -Fabric $priFabric
 $recContainer = Get-ASRProtectionContainer -Fabric $recFab
 $reverseContainerMapping = Get-ASRProtectionContainerMapping -ProtectionContainer $recContainer | where {$_.TargetProtectionContainerId -like $priContainer.Id}
 
-$rpisInContainer = Get-ASRReplicationProtectedItem -ProtectionContainer $priContainer | where {$ProtectedItemArmIds -contains $_.ID}
+$rpisInContainer = Get-ASRReplicationProtectedItem -ProtectionContainer $priContainer | where {$SourceVmArmIds -contains $_.ProviderSpecificDetails.FabricObjectId}
+
+# Setup the vault context.
+$message = 'Replication protected Items in Container:'
+Write-Output $message
+$rpisInContainer
+
 $failoverJobs = New-Object System.Collections.ArrayList
 $rpiLookUpByJobId = @{}
 foreach ($rpi in $rpisInContainer) {
@@ -59,6 +65,7 @@ foreach ($job in $failoverJobs) {
 }
 
 $reverseReplicationJobs = New-Object System.Collections.ArrayList
+$drVmArmIds = New-Object System.Collections.ArrayList
 
 foreach ($job in $failoverCommitJobs) {
 	do {
@@ -75,6 +82,7 @@ foreach ($job in $failoverCommitJobs) {
 	$DrResourceGroupId = $rpi.ProviderSpecificDetails.RecoveryAzureResourceGroupId
 	$drResourceGroupName = $DrResourceGroupId.Split('/')[4]
 	$drVM = Get-AzVM -ResourceGroupName $drResourceGroupName -Name $ProtectedItemName
+	$drVmArmIds.Add($drVM.Id)
 	$message = 'Reverse replication to be triggered for {0}' -f $drVM.ID
 	Write-Output $message
 	$SourceVmArmId = $rpi.ProviderSpecificDetails.FabricObjectId
@@ -137,7 +145,10 @@ foreach ($job in $reverseReplicationJobs) {
 	} while (-not $irFinished)
 }
 
+$rpisInContainer = Get-ASRReplicationProtectedItem -ProtectionContainer $recContainer | where {$drVmArmIds -contains $_.ProviderSpecificDetails.FabricObjectId}
+$reprotectedArmIds = New-Object System.Collections.ArrayList
+$rpisInContainer | $reprotectedArmIds.Add($_.Id)
+
+$DeploymentScriptOutputs['ReProtectedItemArmIds'] = $reprotectedArmIds -Join ','
+$message = 'Reprotected Items ARM IDs {0}' -f $DeploymentScriptOutputs['ReProtectedItemArmIds']
 Write-Output $message
-$DeploymentScriptOutputs['ProtectedItemId'] = $rpi.ID
-$DeploymentScriptOutputs['ProtectedItemName'] = $rpi.Name
-$DeploymentScriptOutputs
