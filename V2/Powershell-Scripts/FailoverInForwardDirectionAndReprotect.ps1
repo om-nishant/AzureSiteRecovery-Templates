@@ -3,13 +3,14 @@
     [string] $VaultResourceGroupName,
     [string] $VaultName,
     [string] $PrimaryRegion,
-	[string[]] $SourceVmArmIds
+	[string[]] $sourceVmARMIdsCSV
 	[string] $RecoveryStagingStorageAccount,
     [string] $RecoveryReplicaDiskAccountType = 'Standard_LRS',
     [string] $RecoveryTargetDiskAccountType = 'Standard_LRS')
 
-$message = 'Performing Failover for virtual machine {0} in vault {1} using target resource group {2} and target virtual network {3}.' -f $SourceVmArmId, $VaultName, $TargetResourceGroupId, $TargetVirtualNetworkId
+$message = 'Performing Failover for virtual machine {0} in vault {1}.' -f $sourceVmARMIdsCSV, $VaultName
 Write-Output $message 
+$sourceVmARMIds = $sourceVmARMIdsCSV.Split(',')
 
 # Initialize the designated output of deployment script that can be accessed by various scripts in the template.
 $DeploymentScriptOutputs = @{}
@@ -150,5 +151,7 @@ $reprotectedArmIds = New-Object System.Collections.ArrayList
 $rpisInContainer | $reprotectedArmIds.Add($_.Id)
 
 $DeploymentScriptOutputs['ReProtectedItemArmIds'] = $reprotectedArmIds -Join ','
+$DeploymentScriptOutputs['DrVmArmIds'] = $drVmArmIds -Join ','
+
 $message = 'Reprotected Items ARM IDs {0}' -f $DeploymentScriptOutputs['ReProtectedItemArmIds']
 Write-Output $message

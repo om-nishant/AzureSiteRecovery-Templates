@@ -5,7 +5,7 @@
     [string] $PrimaryRegion,
     [string] $RecoveryRegion,
     [string] $policyName = 'A2APolicy',
-	[string[]] $sourceVmIds,
+	[stringCsv] $sourceVmARMIdsCSV,
 	[string] $PrimaryStagingStorageAccount,
     [string] $RecoveryReplicaDiskAccountType = 'Standard_LRS',
     [string] $RecoveryTargetDiskAccountType = 'Standard_LRS'
@@ -13,7 +13,7 @@
 
 # Initialize the designated output of deployment script that can be accessed by various scripts in the template.
 $DeploymentScriptOutputs = @{}
-
+$sourceVmARMIds = $sourceVmARMIdsCSV.Split(',')
 # Setup the vault context.
 $message = 'Setting Vault context using vault {0} under resource group {1} in subscription {2}.' -f $VaultName, $VaultResourceGroupName, $VaultSubscriptionId
 Write-Output $message
@@ -168,7 +168,7 @@ $DeploymentScriptOutputs['RecoveryProtectionContainerMapping'] = $reverseContain
 
 # Start enabling replication for all the VMs.
 $enableReplicationJobs = New-Object System.Collections.ArrayList
-foreach ($sourceVmArmId in $sourceVmIds) {
+foreach ($sourceVmArmId in $sourceVmARMIds) {
 	# Trigger Enable protection
 	$vmIdTokens = $sourceVmArmId.Split('/');
 	$vmName = $vmIdTokens[8]
