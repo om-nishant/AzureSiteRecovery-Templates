@@ -3,6 +3,7 @@
     [string] $VaultResourceGroupName,
     [string] $VaultName,
     [string] $PrimaryRegion,
+    [string] $RecoveryRegion,
 	[string] $sourceVmARMIdsCSV,
 	[string] $RecoveryStagingStorageAccount,
     [string] $RecoveryReplicaDiskAccountType = 'Standard_LRS',
