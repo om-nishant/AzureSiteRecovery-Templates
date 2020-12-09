@@ -28,6 +28,7 @@ Set-AzRecoveryServicesAsrVaultContext -vault $vault
 # Look up the protection container mapping to be used for the enable replication.
 $priFabric = get-asrfabric | where {$_.FabricSpecificDetails.Location -like $PrimaryRegion -or $_.FabricSpecificDetails.Location -like $PrimaryRegion.Replace(' ', '')}
 $priContainer = Get-ASRProtectionContainer -Fabric $priFabric
+$recFab = get-asrfabric | where {$_.FabricSpecificDetails.Location -like $RecoveryRegion -or $_.FabricSpecificDetails.Location -like $RecoveryRegion.Replace(' ', '')}
 $recContainer = Get-ASRProtectionContainer -Fabric $recFab
 $reverseContainerMapping = Get-ASRProtectionContainerMapping -ProtectionContainer $recContainer | where {$_.TargetProtectionContainerId -like $priContainer.Id}
 
