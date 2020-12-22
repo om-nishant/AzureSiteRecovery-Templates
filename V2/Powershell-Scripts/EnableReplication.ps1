@@ -176,8 +176,8 @@ foreach ($sourceVmArmId in $sourceVmARMIds) {
 	$vmIdTokens = $sourceVmArmId.Split('/');
 	$vmName = $vmIdTokens[8]
 	$vmResourceGroupName = $vmIdTokens[4]
+	$message = 'Enable protection to be triggered for {0} using VM name {1} as protected item ARM name.' -f $sourceVmArmId, $vmName
 	$vm = Get-AzVM -ResourceGroupName $vmResourceGroupName -Name $vmName
-	$message = 'Enable protection to be triggered for {0} using VM name {1} as protected item ARM name.' -f $vm.ID, $vmName
 	Write-Output $message
 	$diskList =  New-Object System.Collections.ArrayList
 
@@ -198,7 +198,7 @@ foreach ($sourceVmArmId in $sourceVmARMIds) {
 	Write-Output $message
 	
 	$job = New-ASRReplicationProtectedItem -Name $vmName -ProtectionContainerMapping $primaryProtectionContainerMapping `
-		-AzureVmId $SourceVmArmId -AzureToAzureDiskReplicationConfiguration $diskList -RecoveryResourceGroupId $TargetResourceGroupId `
+		-AzureVmId $vm.ID -AzureToAzureDiskReplicationConfiguration $diskList -RecoveryResourceGroupId $TargetResourceGroupId `
 		-RecoveryAzureNetworkId $TargetVirtualNetworkId
 	$enableReplicationJobs.Add($job)
 }
