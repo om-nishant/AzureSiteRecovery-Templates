@@ -16,6 +16,15 @@
 # Initialize the designated output of deployment script that can be accessed by various scripts in the template.
 $DeploymentScriptOutputs = @{}
 $sourceVmARMIds = $sourceVmARMIdsCSV.Split(',')
+$message = 'Enable replication will be triggered for following {0} VMs' -f $sourceVmARMIds.Count
+foreach ($sourceVmArmId in $sourceVmARMIds) {
+	$message += "`n $sourceVmARMId"
+}
+Write-Output $message
+
+$message = 'Checking and setting up necessary infrastructure to enable protection for {0}' -f $sourceVmARMIdsCSV
+Write-Output $message
+
 # Setup the vault context.
 $message = 'Setting Vault context using vault {0} under resource group {1} in subscription {2}.' -f $VaultName, $VaultResourceGroupName, $VaultSubscriptionId
 Write-Output $message
