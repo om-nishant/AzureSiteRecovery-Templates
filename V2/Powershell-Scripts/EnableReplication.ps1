@@ -13,6 +13,8 @@
     [string] $RecoveryTargetDiskAccountType = 'Standard_LRS'
 )
 
+$CRLF = "`r`n"
+
 # Initialize the designated output of deployment script that can be accessed by various scripts in the template.
 $DeploymentScriptOutputs = @{}
 $sourceVmARMIds = $sourceVmARMIdsCSV.Split(',')
@@ -22,8 +24,7 @@ foreach ($sourceVmArmId in $sourceVmARMIds) {
 }
 Write-Output $message
 
-$message = 'Checking and setting up necessary infrastructure to enable protection for {0}' -f $sourceVmARMIdsCSV
-Write-Output $message
+Write-Output $CRLF
 
 # Setup the vault context.
 $message = 'Setting Vault context using vault {0} under resource group {1} in subscription {2}.' -f $VaultName, $VaultResourceGroupName, $VaultSubscriptionId
@@ -33,8 +34,7 @@ $vault = Get-AzRecoveryServicesVault -ResourceGroupName $VaultResourceGroupName 
 Set-AzRecoveryServicesAsrVaultContext -vault $vault
 $message = 'Vault context set.'
 Write-Output $message
-$message = ''
-Write-Output $message
+Write-Output $CRLF
 
 # Lookup and create replicatio fabrics if required.
 $azureFabrics = get-asrfabric
@@ -76,6 +76,7 @@ $message = 'Primary Fabric {0}' -f $priFab.Id
 Write-Output $message
 $message = 'Recovery Fabric {0}' -f $recFab.Id
 Write-Output $message
+Write-Output $CRLF
 
 $DeploymentScriptOutputs['PrimaryFabric'] = $priFab.Name
 $DeploymentScriptOutputs['RecoveryFabric'] = $recFab.Name
@@ -112,7 +113,7 @@ $message = 'Primary Protection Container {0}' -f $priContainer.Id
 Write-Output $message
 $message = 'Recovery Protection Container {0}' -f $recContainer.Id
 Write-Output $message
-Write-Output ' '
+Write-Output $CRLF
 
 $DeploymentScriptOutputs['PrimaryProtectionContainer'] = $priContainer.Name
 $DeploymentScriptOutputs['RecoveryProtectionContainer'] = $recContainer.Name
@@ -174,6 +175,7 @@ if ($reverseContainerMapping -eq $null) {
 
 $message = 'Protection Container mapping {0}' -f $primaryProtectionContainerMapping.Id
 Write-Output $message
+Write-Output $CRLF
 
 $DeploymentScriptOutputs['PrimaryProtectionContainerMapping'] = $primaryProtectionContainerMapping.Name
 $DeploymentScriptOutputs['RecoveryProtectionContainerMapping'] = $reverseContainerMapping.Name
@@ -211,6 +213,8 @@ foreach ($sourceVmArmId in $sourceVmARMIds) {
 		-RecoveryAzureNetworkId $TargetVirtualNetworkId
 	$enableReplicationJobs.Add($job)
 }
+
+Write-Output $CRLF
 
 # Monitor each enable replication job.
 $protectedItemArmIds = New-Object System.Collections.ArrayList

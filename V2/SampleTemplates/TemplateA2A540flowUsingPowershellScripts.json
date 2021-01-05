@@ -45,7 +45,7 @@
         },
         "sourceVmARMIdsCSV": {
             "type": "String",
-			"metadata": {
+            "metadata": {
                 "description": "ARM IDs of the Source VMs separated by comma."
             }
         },
@@ -105,7 +105,7 @@
                 "forceUpdateTag": "[parameters('updateTag')]",
                 "azPowerShellVersion": "3.0",
                 "timeout": "PT1H",
-                "arguments": "[concat('-VaultSubscriptionId', ' ', parameters('vaultSubscriptionId'), ' ', '-vaultResourceGroupName', ' ', parameters('vaultResourceGroupName'), ' ', '-vaultName', ' ', parameters('vaultName'), ' ', '-primaryRegion', ' ', replace(string(parameters('originalSourceRegion')), ' ', ''), ' ', '-recoveryRegion', ' ', replace(string(parameters('drRegion')), ' ', ''), ' ', '-policyName', ' ', parameters('preferredPolicyName'), ' ', '-sourceVmARMIdsCSV', ' ', parameters('sourceVmARMIdsCSV'), ' ','-TargetResourceGroupId', ' ', parameters('targetResourceGroupId'), ' ', '-TargetVirtualNetworkId', ' ', parameters('targetVirtualNetworkId'),' ', '-PrimaryStagingStorageAccount', ' ', parameters('primaryStagingStorageAccount'), ' ', '-RecoveryReplicaDiskAccountType', ' ', parameters('recoveryReplicaDiskAccountType'), ' ', '-RecoveryTargetDiskAccountType', ' ', parameters('recoveryTargetDiskAccountType'))]",
+                "arguments": "[concat('-VaultSubscriptionId', ' ', parameters('vaultSubscriptionId'), ' ', '-vaultResourceGroupName', ' ', parameters('vaultResourceGroupName'), ' ', '-vaultName', ' ', parameters('vaultName'), ' ', '-primaryRegion', ' ', replace(string(parameters('originalSourceRegion')), ' ', ''), ' ', '-recoveryRegion', ' ', replace(string(parameters('drRegion')), ' ', ''), ' ', '-policyName', ' ', parameters('preferredPolicyName'), ' ', '-sourceVmARMIdsCSV', ' \\\"', parameters('sourceVmARMIdsCSV'), '\\\" ','-TargetResourceGroupId', ' ', parameters('targetResourceGroupId'), ' ', '-TargetVirtualNetworkId', ' ', parameters('targetVirtualNetworkId'),' ', '-PrimaryStagingStorageAccount', ' ', parameters('primaryStagingStorageAccount'), ' ', '-RecoveryReplicaDiskAccountType', ' ', parameters('recoveryReplicaDiskAccountType'), ' ', '-RecoveryTargetDiskAccountType', ' ', parameters('recoveryTargetDiskAccountType'))]",
                 "primaryScriptURI": "https://raw.githubusercontent.com/om-nishant/AzureSiteRecovery-Templates/main/V2/Powershell-Scripts/EnableReplication.ps1",
                 "cleanupPreference": "Always",
                 "retentionInterval": "P1D"
@@ -130,7 +130,7 @@
                 "forceUpdateTag": "[parameters('updateTag')]",
                 "azPowerShellVersion": "3.0",
                 "timeout": "PT1H",
-                "arguments": "[concat('-VaultSubscriptionId', ' ', parameters('VaultSubscriptionId'), ' ', '-VaultResourceGroupName', ' ', parameters('vaultResourceGroupName'), ' ', '-VaultName', ' ', parameters('vaultName'), ' ', '-PrimaryRegion', ' ', replace(string(parameters('originalSourceRegion')), ' ', ''), ' ', '-RecoveryRegion', ' ', replace(string(parameters('drRegion')), ' ', ''), ' ', '-sourceVmARMIdsCSV', ' ', parameters('sourceVmARMIdsCSV'), ' ', '-RecoveryStagingStorageAccount', ' ', parameters('recoveryStagingStorageAccount'), ' ', '-RecoveryReplicaDiskAccountType', ' ', parameters('recoveryReplicaDiskAccountType'), ' ', '-RecoveryTargetDiskAccountType', ' ', parameters('recoveryTargetDiskAccountType'))]",
+                "arguments": "[concat('-VaultSubscriptionId', ' ', parameters('VaultSubscriptionId'), ' ', '-VaultResourceGroupName', ' ', parameters('vaultResourceGroupName'), ' ', '-VaultName', ' ', parameters('vaultName'), ' ', '-PrimaryRegion', ' ', replace(string(parameters('originalSourceRegion')), ' ', ''), ' ', '-RecoveryRegion', ' ', replace(string(parameters('drRegion')), ' ', ''), ' ', '-sourceVmARMIdsCSV', ' \\\"', parameters('sourceVmARMIdsCSV'), '\\\" ', '-RecoveryStagingStorageAccount', ' ', parameters('recoveryStagingStorageAccount'), ' ', '-RecoveryReplicaDiskAccountType', ' ', parameters('recoveryReplicaDiskAccountType'), ' ', '-RecoveryTargetDiskAccountType', ' ', parameters('recoveryTargetDiskAccountType'))]",
                 "primaryScriptURI": "https://raw.githubusercontent.com/om-nishant/AzureSiteRecovery-Templates/main/V2/Powershell-Scripts/FailoverInForwardDirectionAndReprotect.ps1",
                 "cleanupPreference": "Always",
                 "retentionInterval": "P1D"
@@ -155,13 +155,12 @@
                 "forceUpdateTag": "[parameters('updateTag')]",
                 "azPowerShellVersion": "3.0",
                 "timeout": "PT1H",
-                "arguments": "[concat('-VaultSubscriptionId', ' ', parameters('VaultSubscriptionId'), ' ', '-VaultResourceGroupName', ' ', parameters('vaultResourceGroupName'), ' ', '-VaultName', ' ', parameters('vaultName'), ' ', '-PrimaryRegion', ' ', replace(string(parameters('originalSourceRegion')), ' ', ''), ' ', '-RecoveryRegion', ' ', replace(string(parameters('drRegion')), ' ', ''), ' ',  '-sourceVmARMIdsCSV', ' ', parameters('sourceVmARMIdsCSV'), ' ', '-DrVMArmIdsCSV', ' ', reference('FailoverAndReprotect').outputs.DrVmArmIds, ' ', '-PrimaryStagingStorageAccount', ' ', parameters('primaryStagingStorageAccount'), ' ', '-RecoveryReplicaDiskAccountType', ' ', parameters('recoveryReplicaDiskAccountType'), ' ', '-RecoveryTargetDiskAccountType', ' ', parameters('recoveryTargetDiskAccountType'))]",
+                "arguments": "[concat('-VaultSubscriptionId', ' ', parameters('VaultSubscriptionId'), ' ', '-VaultResourceGroupName', ' ', parameters('vaultResourceGroupName'), ' ', '-VaultName', ' ', parameters('vaultName'), ' ', '-PrimaryRegion', ' ', replace(string(parameters('originalSourceRegion')), ' ', ''), ' ', '-RecoveryRegion', ' ', replace(string(parameters('drRegion')), ' ', ''), ' ',  '-sourceVmARMIdsCSV', ' \\\"', parameters('sourceVmARMIdsCSV'), '\\\" ', '-DrVMArmIdsCSV', ' \\\"', reference('FailoverAndReprotect').outputs.DrVmArmIds, '\\\" ', '-PrimaryStagingStorageAccount', ' ', parameters('primaryStagingStorageAccount'), ' ', '-RecoveryReplicaDiskAccountType', ' ', parameters('recoveryReplicaDiskAccountType'), ' ', '-RecoveryTargetDiskAccountType', ' ', parameters('recoveryTargetDiskAccountType'))]",
                 "primaryScriptURI": "https://raw.githubusercontent.com/om-nishant/AzureSiteRecovery-Templates/main/V2/Powershell-Scripts/FailbackAndReprotect.ps1",
                 "cleanupPreference": "Always",
                 "retentionInterval": "P1D"
             }
         }
-    
     ],
     "outputs": {
         "result": {

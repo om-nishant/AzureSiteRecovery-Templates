@@ -73,7 +73,6 @@ foreach ($job in $failoverJobs) {
 }
 
 $reverseReplicationJobs = New-Object System.Collections.ArrayList
-$failoverCommitJobs = New-Object System.Collections.ArrayList
 
 foreach ($job in $failoverCommitJobs) {
 	do {
