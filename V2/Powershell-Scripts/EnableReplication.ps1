@@ -17,7 +17,11 @@ $CRLF = "`r`n"
 
 # Initialize the designated output of deployment script that can be accessed by various scripts in the template.
 $DeploymentScriptOutputs = @{}
-$sourceVmARMIds = $sourceVmARMIdsCSV.Split(',')
+foreach ($sourceId in $sourceVmARMIdsCSV.Split(','))
+{
+    $sourceVmARMIds.Add($sourceId.Trim())
+}
+
 $message = 'Enable replication will be triggered for following {0} VMs' -f $sourceVmARMIds.Count
 foreach ($sourceVmArmId in $sourceVmARMIds) {
 	$message += "`n $sourceVmARMId"
@@ -55,6 +59,21 @@ if ($priFab -eq $null) {
         $job = Get-AsrJob -Job $job
     } while ($job.State -ne 'Succeeded' -and $job.State -ne 'Failed' -and $job.State -ne 'CompletedWithInformation')
 
+	if ($job.State -eq 'Failed') {
+       $message = 'Job {0} failed for {1}' -f $job.DisplayName, $job.TargetObjectName
+       Write-Output $message
+       foreach ($er in $job.Errors) {
+        foreach ($pe in $er.ProviderErrorDetails) {
+            $pe
+        }
+
+        foreach ($se in $er.ServiceErrorDetails) {
+            $se
+        }
+       }
+
+       throw $message
+    }
     $priFab = get-asrfabric -Name $primaryRegion
     Write-Output 'Created Primary Fabric.'
 }
@@ -68,6 +87,21 @@ if ($recFab -eq $null) {
         $job = Get-AsrJob -Job $job
     } while ($job.State -ne 'Succeeded' -and $job.State -ne 'Failed' -and $job.State -ne 'CompletedWithInformation')
 
+	if ($job.State -eq 'Failed') {
+       $message = 'Job {0} failed for {1}' -f $job.DisplayName, $job.TargetObjectName
+       Write-Output $message
+       foreach ($er in $job.Errors) {
+        foreach ($pe in $er.ProviderErrorDetails) {
+            $pe
+        }
+
+        foreach ($se in $er.ServiceErrorDetails) {
+            $se
+        }
+       }
+
+       throw $message
+    }
     $recFab = get-asrfabric -Name $RecoveryRegion
     Write-Output 'Created Recovery Fabric.'
 }
@@ -91,6 +125,21 @@ if ($priContainer -eq $null) {
         $job = Get-AsrJob -Job $job
     } while ($job.State -ne 'Succeeded' -and $job.State -ne 'Failed' -and $job.State -ne 'CompletedWithInformation')
 
+	if ($job.State -eq 'Failed') {
+       $message = 'Job {0} failed for {1}' -f $job.DisplayName, $job.TargetObjectName
+       Write-Output $message
+       foreach ($er in $job.Errors) {
+        foreach ($pe in $er.ProviderErrorDetails) {
+            $pe
+        }
+
+        foreach ($se in $er.ServiceErrorDetails) {
+            $se
+        }
+       }
+
+       throw $message
+    }
     $priContainer = Get-ASRProtectionContainer -Name $priFab.Name -Fabric $priFab
     Write-Output 'Created Primary Protection Container.'
 }
@@ -104,6 +153,21 @@ if ($recContainer -eq $null) {
         $job = Get-AsrJob -Job $job
     } while ($job.State -ne 'Succeeded' -and $job.State -ne 'Failed' -and $job.State -ne 'CompletedWithInformation')
 
+	if ($job.State -eq 'Failed') {
+       $message = 'Job {0} failed for {1}' -f $job.DisplayName, $job.TargetObjectName
+       Write-Output $message
+       foreach ($er in $job.Errors) {
+        foreach ($pe in $er.ProviderErrorDetails) {
+            $pe
+        }
+
+        foreach ($se in $er.ServiceErrorDetails) {
+            $se
+        }
+       }
+
+       throw $message
+    }
     $recContainer = Get-ASRProtectionContainer -Name $recFab.Name -Fabric $recFab
     Write-Output 'Created Recovery Protection Container.'
 }
@@ -131,6 +195,21 @@ if ($primaryProtectionContainerMapping -eq $null) {
             $job = Get-AsrJob -Job $job
         } while ($job.State -ne 'Succeeded' -and $job.State -ne 'Failed' -and $job.State -ne 'CompletedWithInformation')
 
+	    if ($job.State -eq 'Failed') {
+           $message = 'Job {0} failed for {1}' -f $job.DisplayName, $job.TargetObjectName
+           Write-Output $message
+           foreach ($er in $job.Errors) {
+            foreach ($pe in $er.ProviderErrorDetails) {
+                $pe
+            }
+
+            foreach ($se in $er.ServiceErrorDetails) {
+                $se
+            }
+           }
+
+           throw $message
+        }
         $policy = Get-ASRPolicy -Name $policyName
         Write-Output 'Created Replication policy.' 
     }
@@ -141,7 +220,22 @@ if ($primaryProtectionContainerMapping -eq $null) {
         Start-Sleep -Seconds 50
         $job = Get-AsrJob -Job $job
     } while ($job.State -ne 'Succeeded' -and $job.State -ne 'Failed' -and $job.State -ne 'CompletedWithInformation')
-	
+
+	if ($job.State -eq 'Failed') {
+       $message = 'Job {0} failed for {1}' -f $job.DisplayName, $job.TargetObjectName
+       Write-Output $message
+       foreach ($er in $job.Errors) {
+        foreach ($pe in $er.ProviderErrorDetails) {
+            $pe
+        }
+
+        foreach ($se in $er.ServiceErrorDetails) {
+            $se
+        }
+       }
+
+       throw $message
+    }	
 	$primaryProtectionContainerMapping = Get-ASRProtectionContainerMapping -Name $protectionContainerMappingName -ProtectionContainer $priContainer
     Write-Output 'Created Primary Protection Container mappings.'   
 }
@@ -157,8 +251,23 @@ if ($reverseContainerMapping -eq $null) {
             $job = Get-AsrJob -Job $job
         } while ($job.State -ne 'Succeeded' -and $job.State -ne 'Failed' -and $job.State -ne 'CompletedWithInformation')
 
-        $policy = Get-ASRPolicy -Name $policyName
-        Write-Output 'Created Replication policy.' 
+	    if ($job.State -eq 'Failed') {
+           $message = 'Job {0} failed for {1}' -f $job.DisplayName, $job.TargetObjectName
+           Write-Output $message
+           foreach ($er in $job.Errors) {
+            foreach ($pe in $er.ProviderErrorDetails) {
+                $pe
+            }
+
+            foreach ($se in $er.ServiceErrorDetails) {
+                $se
+            }
+           }
+
+           throw $message
+         }
+            $policy = Get-ASRPolicy -Name $policyName
+            Write-Output 'Created Replication policy.' 
     }
 
     $protectionContainerMappingName = $recContainer.Name + 'To' + $priContainer.Name
@@ -168,7 +277,22 @@ if ($reverseContainerMapping -eq $null) {
         Start-Sleep -Seconds 50
         $job = Get-AsrJob -Job $job
     } while ($job.State -ne 'Succeeded' -and $job.State -ne 'Failed' -and $job.State -ne 'CompletedWithInformation')
-	
+
+	if ($job.State -eq 'Failed') {
+       $message = 'Job {0} failed for {1}' -f $job.DisplayName, $job.TargetObjectName
+       Write-Output $message
+       foreach ($er in $job.Errors) {
+        foreach ($pe in $er.ProviderErrorDetails) {
+            $pe
+        }
+
+        foreach ($se in $er.ServiceErrorDetails) {
+            $se
+        }
+       }
+
+       throw $message
+    }	
 	$reverseContainerMapping = Get-ASRProtectionContainerMapping -Name $protectionContainerMappingName -ProtectionContainer $recContainer    
     Write-Output 'Created Recovery Protection Container mappings.'
 }
@@ -225,6 +349,21 @@ foreach ($job in $enableReplicationJobs) {
 		Write-Output $job.State
 	} while ($job.State -ne 'Succeeded' -and $job.State -ne 'Failed' -and $job.State -ne 'CompletedWithInformation')
 
+	if ($job.State -eq 'Failed') {
+       $message = 'Job {0} failed for {1}' -f $job.DisplayName, $job.TargetObjectName
+       Write-Output $message
+       foreach ($er in $job.Errors) {
+        foreach ($pe in $er.ProviderErrorDetails) {
+            $pe
+        }
+
+        foreach ($se in $er.ServiceErrorDetails) {
+            $se
+        }
+       }
+
+       throw $message
+    }
 	$targetObjectName = $job.TargetObjectName
 	$message = 'Enable protection completed for {0}. Waiting for IR.' -f $targetObjectName
 	Write-Output $message

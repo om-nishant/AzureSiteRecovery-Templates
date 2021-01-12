@@ -12,8 +12,11 @@
 
 $message = 'Performing Failback for virtual machine {0} in vault {1}.' -f $sourceVmARMIdsCSV, $VaultName
 Write-Output $message 
+foreach ($sourceId in $sourceVmARMIdsCSV.Split(','))
+{
+    $sourceVmARMIds.Add($sourceId.Trim())
+}
 
-$sourceVmARMIds = $sourceVmARMIdsCSV.Split(',')
 $drVmArmIds = $DrVMArmIdsCSV.Split(',')
 
 # Initialize the designated output of deployment script that can be accessed by various scripts in the template.
@@ -63,7 +66,22 @@ foreach ($job in $failoverJobs) {
 		Write-Output $job.State
 	} while ($job.State -ne 'Succeeded' -and $job.State -ne 'Failed' -and $job.State -ne 'CompletedWithInformation')
 	
-	
+	if ($job.State -eq 'Failed') {
+       $message = 'Job {0} failed for {1}' -f $job.DisplayName, $job.TargetObjectName
+       Write-Output $message
+       foreach ($er in $job.Errors) {
+        foreach ($pe in $er.ProviderErrorDetails) {
+            $pe
+        }
+
+        foreach ($se in $er.ServiceErrorDetails) {
+            $se
+        }
+       }
+
+       throw $message
+    }
+
 	$message = 'Failover completed for {0} with state {1}. Starting commit FO.' -f $job.TargetObjectName, $job.State
 	Write-Output $message
 	$rpi = $rpiLookUpByJobId[$job.ID]
@@ -128,6 +146,22 @@ foreach ($job in $reverseReplicationJobs) {
 		Write-Output $job.State
 	} while ($job.State -ne 'Succeeded' -and $job.State -ne 'Failed' -and $job.State -ne 'CompletedWithInformation')
 	
+	if ($job.State -eq 'Failed') {
+       $message = 'Job {0} failed for {1}' -f $job.DisplayName, $job.TargetObjectName
+       Write-Output $message
+       foreach ($er in $job.Errors) {
+        foreach ($pe in $er.ProviderErrorDetails) {
+            $pe
+        }
+
+        foreach ($se in $er.ServiceErrorDetails) {
+            $se
+        }
+       }
+
+       throw $message
+    }
+    	
 	$message = 'Reverse replication completed for {0}. Waiting for IR.' -f $targetObjectName
 	Write-Output $message
 	

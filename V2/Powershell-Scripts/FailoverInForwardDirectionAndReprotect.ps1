@@ -11,8 +11,10 @@
 
 $message = 'Performing Failover for virtual machine {0} in vault {1}.' -f $sourceVmARMIdsCSV, $VaultName
 Write-Output $message 
-
-$sourceVmARMIds = $sourceVmARMIdsCSV.Split(',')
+foreach ($sourceId in $sourceVmARMIdsCSV.Split(','))
+{
+    $sourceVmARMIds.Add($sourceId.Trim())
+}
 
 $sourceVmARMIds
 
@@ -61,7 +63,22 @@ foreach ($job in $failoverJobs) {
 		$job = Get-AsrJob -Job $job
 		Write-Output $job.State
 	} while ($job.State -ne 'Succeeded' -and $job.State -ne 'Failed' -and $job.State -ne 'CompletedWithInformation')
-	
+
+	if ($job.State -eq 'Failed') {
+       $message = 'Job {0} failed for {1}' -f $job.DisplayName, $job.TargetObjectName
+       Write-Output $message
+       foreach ($er in $job.Errors) {
+        foreach ($pe in $er.ProviderErrorDetails) {
+            $pe
+        }
+
+        foreach ($se in $er.ServiceErrorDetails) {
+            $se
+        }
+       }
+
+       throw $message
+    }	
 	
 	$message = 'Failover completed for {0} with state {1}. Starting commit FO.' -f $job.TargetObjectName, $job.State
 	Write-Output $message
@@ -82,6 +99,21 @@ foreach ($job in $failoverCommitJobs) {
 		Write-Output $job.State
 	} while ($job.State -ne 'Succeeded' -and $job.State -ne 'Failed' -and $job.State -ne 'CompletedWithInformation')
 
+	if ($job.State -eq 'Failed') {
+       $message = 'Job {0} failed for {1}' -f $job.DisplayName, $job.TargetObjectName
+       Write-Output $message
+       foreach ($er in $job.Errors) {
+        foreach ($pe in $er.ProviderErrorDetails) {
+            $pe
+        }
+
+        foreach ($se in $er.ServiceErrorDetails) {
+            $se
+        }
+       }
+
+       throw $message
+    }
 	$rpi = $rpiLookUpByJobId[$job.ID]
 	$ProtectedItemName = $rpi.FriendlyName
 	$message = 'Committed Failover for {0}.' -f $ProtectedItemName
@@ -128,7 +160,23 @@ foreach ($job in $reverseReplicationJobs) {
 		$job = Get-AsrJob -Job $job
 		Write-Output $job.State
 	} while ($job.State -ne 'Succeeded' -and $job.State -ne 'Failed' -and $job.State -ne 'CompletedWithInformation')
-	
+
+	if ($job.State -eq 'Failed') {
+       $message = 'Job {0} failed for {1}' -f $job.DisplayName, $job.TargetObjectName
+       Write-Output $message
+       foreach ($er in $job.Errors) {
+        foreach ($pe in $er.ProviderErrorDetails) {
+            $pe
+        }
+
+        foreach ($se in $er.ServiceErrorDetails) {
+            $se
+        }
+       }
+
+       throw $message
+    }
+    	
 	$message = 'Reverse replication completed for {0}. Waiting for IR.' -f $targetObjectName
 	Write-Output $message
 	
