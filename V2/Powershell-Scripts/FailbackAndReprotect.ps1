@@ -12,6 +12,7 @@
 
 $message = 'Performing Failback for virtual machine {0} in vault {1}.' -f $sourceVmARMIdsCSV, $VaultName
 Write-Output $message 
+$sourceVmARMIds = New-Object System.Collections.ArrayList
 foreach ($sourceId in $sourceVmARMIdsCSV.Split(','))
 {
     $sourceVmARMIds.Add($sourceId.Trim())

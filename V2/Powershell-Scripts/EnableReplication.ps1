@@ -17,6 +17,7 @@ $CRLF = "`r`n"
 
 # Initialize the designated output of deployment script that can be accessed by various scripts in the template.
 $DeploymentScriptOutputs = @{}
+$sourceVmARMIds = New-Object System.Collections.ArrayList
 foreach ($sourceId in $sourceVmARMIdsCSV.Split(','))
 {
     $sourceVmARMIds.Add($sourceId.Trim())
