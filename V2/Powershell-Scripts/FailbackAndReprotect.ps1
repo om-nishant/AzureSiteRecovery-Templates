@@ -135,15 +135,18 @@ foreach ($job in $failoverCommitJobs) {
     $message = 'Reverse replication being triggered'
     Write-Output $message
     $reverseReplciationJob = Update-AzRecoveryServicesAsrProtectionDirection -AzureToAzure -LogStorageAccountId $PrimaryStagingStorageAccount  -ProtectionContainerMapping             $reverseContainerMapping  -RecoveryResourceGroupId $currentVmResourceGroupId -ReplicationProtectedItem $rpi
+    
+    $message = 'Reverse replication triggered with job# {0} for VM {1}' -f $reverseReplciationJob.Name, $reverseReplciationJob.TargetObjectName
+    Write-Output $message
     $reverseReplicationJobs.Add($reverseReplciationJob)    
 }
 
-foreach ($job in $reverseReplicationJobs) {
-    $targetObjectName = $job.TargetObjectName
-
+foreach ($reverseReplciationJob in $reverseReplicationJobs) {
+    $message = 'Tracking job# {0} for VM {1}' -f $reverseReplciationJob.Name, $reverseReplciationJob.TargetObjectName
+    Write-Output $message
     do {
         Start-Sleep -Seconds 50
-        $job = Get-AsrJob -Job $job
+        $job = Get-AsrJob -Job $reverseReplciationJob
         Write-Output $job.State
     } while ($job.State -ne 'Succeeded' -and $job.State -ne 'Failed' -and $job.State -ne 'CompletedWithInformation')
     
@@ -163,6 +166,7 @@ foreach ($job in $reverseReplicationJobs) {
        throw $message
     }
 
+    $targetObjectName = $job.TargetObjectName
     $message = 'Reverse replication completed for {0}. Waiting for IR.' -f $targetObjectName
     Write-Output $message
     

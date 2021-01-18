@@ -133,8 +133,8 @@ foreach ($job in $failoverCommitJobs) {
     Write-Output $message
     
     # Prepare disk configuration.
-    $diskList =  New-Object System.Collections.ArrayList
-    $osDisk =    New-AzRecoveryServicesAsrAzureToAzureDiskReplicationConfig -DiskId $drVM.StorageProfile.OsDisk.ManagedDisk.Id `
+    $diskList = New-Object System.Collections.ArrayList
+    $osDisk = New-AzRecoveryServicesAsrAzureToAzureDiskReplicationConfig -DiskId $drVM.StorageProfile.OsDisk.ManagedDisk.Id `
         -LogStorageAccountId $RecoveryStagingStorageAccount -ManagedDisk  -RecoveryReplicaDiskAccountType $RecoveryReplicaDiskAccountType `
         -RecoveryResourceGroupId  $sourceVmResourceGroupId -RecoveryTargetDiskAccountType $RecoveryTargetDiskAccountType          
     $diskList.Add($osDisk)
@@ -155,6 +155,8 @@ foreach ($job in $failoverCommitJobs) {
 
 foreach ($job in $reverseReplicationJobs) {
     $message = 'Tracking status for job: {0} operation {1} on {2} started at {3}.' -f $job.Name, $job.DisplayName, $job.TargetObjectName, $job.StartTime
+    Write-Output $message
+
     do {
         Start-Sleep -Seconds 50
         $job = Get-AsrJob -Job $job
